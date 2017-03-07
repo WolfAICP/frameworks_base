@@ -4884,11 +4884,18 @@ public final class Settings {
          */
         public static final String RECENT_CARD_TEXT_COLOR = "recent_card_text_color";
 
-	    /**
+        /**
          * show the membar in slim recents
          *  @hide
          */
         public static final String SLIM_RECENTS_MEM_DISPLAY = "slim_recents_mem_display";
+
+        /**
+         * Use the membar in slim recents as clear all button on longclick
+         *  @hide
+         */
+        public static final String SLIM_RECENTS_MEM_DISPLAY_LONG_CLICK_CLEAR =
+                "slim_recents_mem_display_long_click_clear";
 
         /**
          * Slim recents AICPfied empty recents drawable
@@ -8270,6 +8277,12 @@ public final class Settings {
          * @hide
          */
         public static final String HIDE_LOCKSCREEN_SHORTCUTS = "hide_lockscreen_shortcuts";
+
+        /**
+         * Force authorize Substratum (or equivalent) frontend calling packages by Masquerade
+         * @hide
+         */
+        public static final String FORCE_AUTHORIZE_SUBSTRATUM_PACKAGES = "force_authorize_substratum_packages";
 
         /**
          * This are the settings to be backed up.
