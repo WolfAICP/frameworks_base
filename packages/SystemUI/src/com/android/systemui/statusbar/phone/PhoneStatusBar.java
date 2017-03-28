@@ -161,6 +161,7 @@ import com.android.systemui.navigation.Navigator;
 import com.android.systemui.qs.QSContainer;
 import com.android.systemui.omni.StatusBarHeaderMachine;
 import com.android.systemui.qs.QSPanel;
+import com.android.systemui.recents.Recents;
 import com.android.systemui.recents.RecentsActivity;
 import com.android.systemui.recents.ScreenPinningRequest;
 import com.android.systemui.recents.events.EventBus;
@@ -681,6 +682,15 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.RECENT_CARD_TEXT_COLOR), false, this,
                     UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_TINT_SWITCH),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_BUTTON_COLOR),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_BUTON_CUSTOM_ICON_SWITCH),
+                    false, this, UserHandle.USER_ALL);
             update();
         }
 
@@ -763,6 +773,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     || uri.equals(Settings.System.getUriFor(
                     Settings.System.RECENT_CARD_TEXT_COLOR))) {
                 rebuildRecentsScreen();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_TINT_SWITCH))
+                    || uri.equals(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_BUTTON_COLOR))
+                    || uri.equals(Settings.System.getUriFor(
+                    Settings.System.NAVBAR_BUTON_CUSTOM_ICON_SWITCH))) {
+                mNavigationController.updateNavbarOverlay(mContext.getResources());
             }
 
             update();
@@ -1862,6 +1879,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     }
 
+    void setTickerTint(int color) {
+        if (mTicker != null) {
+            mTicker.setDefaultColor(color);
+        }
+    }
+
     public int getStatusBarHeight() {
         if (mNaturalBarHeight < 0) {
             final Resources res = mContext.getResources();
@@ -1904,6 +1927,21 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     @Override
     protected void toggleSplitScreenMode(int metricsDockAction, int metricsUndockAction) {
+        if (mSlimRecents != null) {
+            int dockSide = WindowManagerProxy.getInstance().getDockSide();
+            if (dockSide == WindowManager.DOCKED_INVALID) {
+                mSlimRecents.startMultiWindow();
+                if (metricsDockAction != -1) {
+                    MetricsLogger.action(mContext, metricsDockAction);
+                }
+            } else {
+                EventBus.getDefault().send(new UndockingTaskEvent());
+                if (metricsUndockAction != -1) {
+                    MetricsLogger.action(mContext, metricsUndockAction);
+                }
+            }
+            return;
+        }
         if (mRecents == null) {
             return;
         }
@@ -6093,9 +6131,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         if (slimRecents) {
             mSlimRecents = new RecentController(mContext, mLayoutDirection);
+            mRecents = null;
             //mSlimRecents.setCallback(this);
             rebuildRecentsScreen();
         } else {
+            mRecents = getComponent(Recents.class);
             mSlimRecents = null;
         }
     }
